@@ -1,6 +1,7 @@
 import dbConnect from '@/lib/dbConnect';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import User from '@/models/user';
+import { send } from 'process';
 
 type InsertUser = {
     username: string,
@@ -30,8 +31,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         case 'POST':
             try {
                 if (!isUser(body)) {
+                    console.log('bod elem missing');
+                    res.status(400).send({ msg: 'body elements missing', body });
                     break;
                 }
+                console.log('should reach here');
                 const user = await User.create(body);
                 res.status(200).send({ success: true, msg: 'user created', data: user });
                 break;

@@ -24,6 +24,7 @@ export default async function dbConnect() {
     };
 
     if (mongoose.connection.readyState >= 1) {
+        console.log('already connected');
         return;
     }
 
