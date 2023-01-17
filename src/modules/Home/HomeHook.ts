@@ -12,9 +12,16 @@ export function HomeHook(session: Session | null) {
         },
         set_userSettings } = AllContext();
 
+    const getEmail = useCallback(() => {
+        if (!session || !session.user || typeof session.user.email !== 'string') return;
+
+        set_userSettings({
+            email: session.user.email,
+        });
+    }, [session, set_userSettings]);
 
     const getToken = useCallback(async () => {
-        if (email && jwt_token) {
+        if (!email || (email && jwt_token)) {
             return;
         }
         let token = localStorage.getItem('token') as any;
@@ -57,9 +64,10 @@ export function HomeHook(session: Session | null) {
     }, [jwt_token, set_userSettings, token_verified]);
 
     useEffect(() => {
+        getEmail();
         getToken();
         verifyToken();
-    }, [getToken, verifyToken]);
+    }, [getEmail, getToken, verifyToken]);
 
 
     return {

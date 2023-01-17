@@ -17,24 +17,24 @@ function hasEmail(body: any): body is CheckUserAgainstDatabase {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { method, body, query } = req;
     await dbConnect();
-    console.log('--aa -- bb');
+    // console.log('--aa -- bb');
     const { action } = query as { action: 'generate' | 'verify'; };
     const { email, token } = body as { email: string, token: string; };
 
     switch (method) {
         case 'POST':
-            console.log('test 1');
+            // console.log('test 1');
             try {
                 switch (action) {
                     case 'generate': {
                         const emailToken = jwt.sign({ email }, 'test');
-                        console.log({ emailToken });
+                        // console.log({ emailToken });
                         res.status(200).send({ emailToken });
                     } break;
                     case 'verify': {
                         const decoded = jwt.verify(token, 'test') as { email: string; };
-                        console.log('---------eeeeeeee---------');
-                        console.log({ decoded });
+                        // console.log('---------eeeeeeee---------');
+                        // console.log({ decoded });
                         // const decoded = jwt.verify(emailToken, 'test');
                         res.status(200).send({ emailToken: decoded });
                     } break;
