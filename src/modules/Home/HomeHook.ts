@@ -2,45 +2,66 @@ import { AllContext } from '@/context/AllContext';
 import { Session } from 'next-auth';
 import { useCallback, useEffect } from 'react';
 import axios from 'axios';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import * as t from '@/types';
 
-
 export function HomeHook(session: Session | null) {
-    const { state_userSettings: { userId, email },
+    const {
+        state_userSettings: {
+            userId, email, jwt_token, token_verified
+        },
         set_userSettings } = AllContext();
 
-    const fetcher = async (url: string) => {
-        const { status, data } = await axios.post(url, {
-            email
-        });
-        return 'data';
-    };
-    const { data: user_from_db, isLoading, error } = useSWR('/api/user',
-        async (url: string) => {
-            const { status, data } = await axios.post(url, {
+
+    const getToken = useCallback(async () => {
+        if (email && jwt_token) {
+            return;
+        }
+        let token = localStorage.getItem('token') as any;
+        if (token && !jwt_token) {
+            set_userSettings({
+                jwt_token: token
+            });
+            console.log('part 1');
+        } else if (!token && email) {
+            const { data, status } = await axios.post('/api/users/token/generate', {
                 email
             });
-            return 'data';
-        }, {
-        isPaused: () => {
-            return !!email;
+            console.log('part 2');
+            console.log({ data });
+            localStorage.setItem('token', data.emailToken);
+            set_userSettings({
+                jwt_token: data.emailToken
+            });
         }
-    });
+    }, [email, jwt_token, set_userSettings]);
 
-    const user_logs_in = useCallback(() => {
-        if (session === null) return;
-        // get userId from mongoose
-        const api = '/api/users';
+    const verifyToken = useCallback(async () => {
+        if (!jwt_token || token_verified) return;
 
-    }, [session]);
+        const { data, status } = await axios.post<{ email: string; }>('/api/users/token/verify', {
+            token: jwt_token
+        });
+        if (status === 200) {
+            set_userSettings({
+                token_verified: true
+            });
+        } else {
+            set_userSettings({
+                userId: null,
+                jwt_token: null,
+                token_verified: false,
+                email: ''
+            });
+        }
+    }, [jwt_token, set_userSettings, token_verified]);
 
     useEffect(() => {
-        console.log({ session, user_from_db });
-    }, [session, user_from_db]);
+        getToken();
+        verifyToken();
+    }, [getToken, verifyToken]);
 
 
     return {
-        user_from_db
     };
 }

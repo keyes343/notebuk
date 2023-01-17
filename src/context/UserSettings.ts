@@ -15,11 +15,15 @@ export enum act {
 
 export type State = {
     userId: null | false | string,
+    jwt_token: null | string,
+    token_verified: boolean,
     email: string;
 };
 
 export const initialState: State = {
     userId: null,
+    jwt_token: null,
+    token_verified: false,
     email: ''
 };
 
