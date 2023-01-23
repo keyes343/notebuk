@@ -1,10 +1,9 @@
 import mongoose, { Document } from "mongoose";
 
-interface UserType extends Document {
+interface UserType {
     username: string,
     email: string,
 };
-
 const UserSchema = new mongoose.Schema<UserType>({
     username: String,
     email: String
